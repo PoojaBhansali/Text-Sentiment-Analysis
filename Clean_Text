@@ -1,0 +1,38 @@
+all_stopwords = stopwords.words('english')
+
+def remove_noise(text):
+    
+    # Make lowercase
+    text = text.apply(lambda x: " ".join(x.lower() for x in x.split()))
+    
+    # Remove whitespaces
+    text = text.apply(lambda x: " ".join(x.strip() for x in x.split()))
+    
+    # Remove special characters
+    text = text.apply(lambda x: "".join([" " if ord(i) < 32 or ord(i) > 126 else i for i in x]))
+    
+#     text = text.apply(lambda x: ' '.join([word for word in x if(len(word)>2)]))
+    
+    # Remove punctuation
+    text = text.str.replace('[^\w\s]', '')
+    
+    # Remove numbers
+    text = text.str.replace('\d+', '')
+    
+    # Remove Stopwords
+    text = text.apply(lambda x: ' '.join([word for word in x.split() if word not in (all_stopwords)]))
+    
+    # Convert to string
+    text = text.astype(str)
+        
+    return text
+
+# Applying noise removal function to data
+dataset_coworking['Filtered_Review_Text'] = remove_noise(dataset_coworking['title'])
+
+def sentiment_analyser(text):
+    return text.apply(lambda Text: pd.Series(TextBlob(Text).sentiment.polarity))
+
+# Applying function to reviews
+dataset_coworking['Polarity'] = sentiment_analyser(dataset_coworking['Filtered_Review_Text'])
+dataset_coworking.head(2)
